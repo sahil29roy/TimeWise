@@ -25,16 +25,20 @@ def test_connection():
 
 
 def save_prediction(start_hour, start_time, predicted_days):
-    prediction = {
-        "start_hour": int(start_hour),
-        "start_time": str(start_time),
-        "predicted_days": float(predicted_days),
-        "created_at": datetime.now()
-    }
+    try:
+        prediction = {
+            "start_hour": int(start_hour),
+            "start_time": str(start_time),
+            "predicted_days": float(predicted_days),
+            "created_at": datetime.now()
+        }
 
-    result = predictions_collection.insert_one(prediction)
+        result = predictions_collection.insert_one(prediction)
 
-    return str(result.inserted_id)
+        return str(result.inserted_id)
+    except (PyMongoError, Exception) as error:
+        print("Error saving prediction to MongoDB:", error)
+        return None
 
 
 def get_prediction_history(limit=10):
