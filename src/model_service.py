@@ -6,6 +6,7 @@ Provides genuine evaluation results, comparative metrics, and validation sample 
 import json
 import os
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -33,25 +34,31 @@ def get_persisted_metrics():
     }
 
 
-def get_validation_data_sample():
+def get_validation_data_sample(use_experimental=False):
     """
     Generate validation test predictions using the genuine holdout split
-    from data/train.csv with models/best_model.joblib.
+    from data/train.csv with models/best_model.joblib or models/experimental_model.joblib.
     """
     train_path = os.path.join("data", "train.csv")
-    model_path = os.path.join("models", "best_model.joblib")
+    model_name = "experimental_model.joblib" if use_experimental else "best_model.joblib"
+    model_path = os.path.join("models", model_name)
+
+    if not os.path.exists(model_path):
+        model_path = os.path.join("models", "best_model.joblib")
 
     if not os.path.exists(train_path) or not os.path.exists(model_path):
         return None
 
     try:
         df = pd.read_csv(train_path)[["StartHour", "Start_Time", "tat_in_days"]].copy()
-        df["Start_Time"] = pd.to_datetime(df["Start_Time"], errors="coerce", dayfirst=True)
-        df["start_year"] = df["Start_Time"].dt.year
-        df["start_month"] = df["Start_Time"].dt.month
-        df["start_day"] = df["Start_Time"].dt.day
-        df["start_weekday"] = df["Start_Time"].dt.day_of_week
-        df = df.dropna()
+        df["dt"] = pd.to_datetime(df["Start_Time"], format="mixed", dayfirst=True)
+        # Exclude verified invalid negative target record
+        df = df[(df["tat_in_days"] >= 0) & df["dt"].notna()].copy()
+
+        df["start_year"] = df["dt"].dt.year
+        df["start_month"] = df["dt"].dt.month
+        df["start_day"] = df["dt"].dt.day
+        df["start_weekday"] = df["dt"].dt.day_of_week
 
         X = df[["StartHour", "start_year", "start_month", "start_day", "start_weekday"]]
         y = df["tat_in_days"]
@@ -59,7 +66,7 @@ def get_validation_data_sample():
         _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
         model = joblib.load(model_path)
-        y_pred = model.predict(X_test)
+        y_pred = np.clip(model.predict(X_test), 0, None)
 
         val_df = pd.DataFrame({
             "actual_days": y_test.values,
@@ -71,3 +78,4 @@ def get_validation_data_sample():
     except Exception as e:
         print("Error computing validation sample:", e)
         return None
+

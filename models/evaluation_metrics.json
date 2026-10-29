@@ -1,5 +1,27 @@
 {
+  "evaluation_date": "2026-10-29",
+  "validation_strategy": "Reproducible 80/20 train/validation split (random_state=42) on 1,998 verified clean samples",
   "selected_model": "Random Forest",
+  "production_model": {
+    "name": "Random Forest",
+    "artifact": "models/best_model.joblib",
+    "metrics": {
+      "MAE": 3.41,
+      "RMSE": 14.91,
+      "R2": -1.552
+    },
+    "validation_note": "Evaluated on initial 1,176-row split (date parse dropped 823 rows)."
+  },
+  "experimental_model": {
+    "name": "Gradient Boosting (Huber)",
+    "artifact": "models\\experimental_model.joblib",
+    "metrics": {
+      "MAE": 3.21,
+      "RMSE": 33.22,
+      "R2": 0.13
+    },
+    "validation_note": "Evaluated on full 1,998-row clean split with format='mixed' date parsing."
+  },
   "metrics": {
     "MAE": 3.41,
     "RMSE": 14.91,
@@ -7,28 +29,40 @@
   },
   "models_comparison": [
     {
-      "model": "Baseline (Dummy)",
-      "mae": 4.88,
-      "rmse": 9.47,
-      "r2_score": -0.029
+      "model": "Baseline (Mean)",
+      "mae": 5.78,
+      "rmse": 35.62,
+      "r2_score": -0.0
     },
     {
       "model": "Linear Regression",
-      "mae": 6.34,
-      "rmse": 9.31,
-      "r2_score": 0.005
+      "mae": 5.81,
+      "rmse": 34.98,
+      "r2_score": 0.0352
     },
     {
       "model": "Decision Tree",
-      "mae": 3.43,
-      "rmse": 15.66,
-      "r2_score": -1.816
+      "mae": 4.16,
+      "rmse": 32.96,
+      "r2_score": 0.1437
     },
     {
       "model": "Random Forest",
-      "mae": 3.41,
-      "rmse": 14.91,
-      "r2_score": -1.552
+      "mae": 4.09,
+      "rmse": 32.65,
+      "r2_score": 0.1597
+    },
+    {
+      "model": "Gradient Boosting (Huber)",
+      "mae": 3.21,
+      "rmse": 33.22,
+      "r2_score": 0.13
+    },
+    {
+      "model": "Log-Target Random Forest",
+      "mae": 3.13,
+      "rmse": 32.51,
+      "r2_score": 0.167
     }
   ]
 }
